@@ -1,0 +1,25 @@
+#!/bin/sh
+
+function docker_gc_for_status() {
+    local status="$1"
+    docker ps -a -q -f status="$status" | while read container; do
+        docker rm "$container"
+    done
+}
+
+function usage() {
+    echo "Usage: $(basename $0) [-c] [-h]" >&2
+    echo "  -c  delete \"created\" containers as well (may remove volume containers!)" >&2
+    echo "  -h  show this message" >&2
+    echo "" >&2
+}
+
+docker_gc_for_status exited
+
+while getopts "ch" option; do
+    case "$option" in
+        c) docker_gc_for_status created;;
+        *) usage; exit 1;;
+    esac
+done
+shift $((OPTIND - 1))
